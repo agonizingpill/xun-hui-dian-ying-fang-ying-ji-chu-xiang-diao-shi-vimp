@@ -42,6 +42,16 @@ input[type=checkbox] { width:auto; }
 .lens::before { content:''; display:block; width:42px; height:42px; border:3px solid var(--accent); border-radius:50%;
   outline:1px solid var(--line); outline-offset:3px; margin:8px 0 15px }
 .callout { padding:14px; border-left:3px solid var(--accent); background:var(--tint); margin-block:12px }
+.model-list { gap:12px; }
+.model-card { border:1px solid var(--line); padding:14px; display:grid; gap:8px; }
+.model-card h3 { margin:0; overflow-wrap:anywhere; }
+.model-card p { margin:0; }
+.gate-grid { display:flex; flex-wrap:wrap; gap:6px; }
+.gate { border:1px solid var(--line); padding:3px 7px; font-size:.86rem; }
+.gate.good { color:oklch(82% .09 146); }
+.gate.bad { color:oklch(79% .13 42); border-color:oklch(79% .13 42); }
+.matrix { margin:0; overflow:auto; font-size:.78rem; color:var(--soft); }
+.model-card form { margin-top:4px; }
 .welcome .title { background:var(--sheet); border:1px solid var(--line); border-bottom:4px solid var(--accent); padding:1.6rem 1.35rem; min-height:13rem }
 @media(max-width:1000px) { .spread,.spread.reversed { grid-template-columns:1fr } }
 @media(max-width:720px) { .shell { display:block } }

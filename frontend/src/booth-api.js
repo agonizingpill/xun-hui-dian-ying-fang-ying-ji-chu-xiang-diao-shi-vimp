@@ -11,4 +11,9 @@ export const studio = {
   lend: body => request('/lenses/lend', body),
   returnLens: (code, body) => request('/lenses/' + code + '/return', body),
   clear: (booth, body) => request('/booths/' + booth + '/clear',body),
+  models: () => request('/models'),
+  addSamples: body => request('/models/readings', body),
+  trainModel: body => request('/models/train', body),
+  activateModel: version => request('/models/' + encodeURIComponent(version) + '/activate', {}),
+  withdrawModel: version => request('/models/' + encodeURIComponent(version) + '/withdraw', {}),
 };

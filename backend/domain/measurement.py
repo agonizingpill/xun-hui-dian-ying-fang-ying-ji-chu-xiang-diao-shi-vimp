@@ -6,6 +6,7 @@ from domain.booth_tables import booths, measurements
 from domain.catalog import active_loan, lookup
 from domain.learning import FEATURES
 from domain.outlet import powered
+from domain.quality import active_version
 
 
 def check_card(booth, active, readings):
@@ -18,14 +19,21 @@ def check_card(booth, active, readings):
 
 def evaluate(booth_code, form, user):
     with transaction() as conn:
-        booth = lookup(conn, booths, booth_code)
+        # Lock the global pointer before the booth. Activation takes the same
+        # pointer lock, so accepted jobs are linearized with the switch.
+        model_version = active_version(conn, lock=True)
+        booth = lookup(conn, booths, booth_code, lock=True)
         powered(booth)
         reading = form.model_dump()
         check_card(booth, active_loan(conn, booth_code), reading)
-    return submit(user,{'booth_code':booth_code,'receipt_revision':booth['receipt_revision'],
-                        'optical_epoch':booth['optical_epoch'],'card':reading['card'],
-                        'source_measurement':reading['source_measurement'],
-                        'sensors':{field:reading[field] for field in FEATURES}})
+        payload = {'booth_code':booth_code,'receipt_revision':booth['receipt_revision'],
+                   'optical_epoch':booth['optical_epoch'],'card':reading['card'],
+                   'source_measurement':reading['source_measurement'],
+                   'model_version':model_version,
+                   'sensors':{field:reading[field] for field in FEATURES}}
+        # Enqueue before releasing the booth row lock. Activation updates every
+        # booth in one transaction, so this establishes the accepted version.
+        return submit(user, payload, model_version=model_version)
 
 
 def save(form, user):

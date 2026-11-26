@@ -20,14 +20,22 @@ def records(conn, table, filters=(), limit=150):
     return [dict(row) for row in conn.execute(statement).mappings()]
 
 
+def with_model_aliases(row):
+    if isinstance(row, dict) and row.get('model_version'):
+        row.setdefault('active_model_version', row['model_version'])
+        row.setdefault('current_model_version', row['model_version'])
+    return row
+
+
 def power_board():
     with transaction() as conn:
-        return {'booths': records(conn, booths), 'receipts': records(conn, receipts)}
+        booths = [with_model_aliases(row) for row in records(conn, booths)]
+        return {'booths': booths, 'receipts': records(conn, receipts)}
 
 
 def report_board(booth_code):
     with transaction() as conn:
-        booth = lookup(conn, booths, booth_code)
+        booth = with_model_aliases(lookup(conn, booths, booth_code))
         reports = records(conn, measurements, (measurements.c.booth_code == booth_code,))
         loan = active_loan(conn, booth_code)
         return {'booth': booth, 'reports': reports, 'active_loan': loan}

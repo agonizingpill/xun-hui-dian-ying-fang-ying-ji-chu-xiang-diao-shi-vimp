@@ -9,14 +9,19 @@ from core.config import REDIS_URL
 broker = Redis.from_url(REDIS_URL, decode_responses=True)
 QUEUE = 'compute_requests'
 
-def submit(user, payload):
+def submit(user, payload, model_version=None):
     token = uuid4().hex
+    version = model_version or payload.get('model_version')
+    if version:
+        payload = {**payload, 'model_version': version}
     item = {'token': token, 'owner': user['sub'], 'input': payload}
+    if version:
+        item['model_version'] = version
     with broker.pipeline() as pipe:
         pipe.set(f'compute:{token}', json.dumps({'owner': user['sub'], 'status': 'queued'}), ex=86400)
         pipe.rpush(QUEUE, json.dumps(item))
         pipe.execute()
-    return {'token': token, 'status': 'queued'}
+    return {'token': token, 'status': 'queued', **({'model_version': version} if version else {})}
 
 def view(user, token):
     raw = broker.get(f'compute:{token}')
@@ -32,3 +37,7 @@ def result(user, token):
     if data['status'] != 'ready':
         raise HTTPException(409, detail='等待计算完成后再提交')
     return data
+
+
+enqueue = submit
+fetch_result = result

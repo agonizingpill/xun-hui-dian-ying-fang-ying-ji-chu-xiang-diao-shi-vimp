@@ -1,5 +1,6 @@
 from sqlalchemy import CheckConstraint, Column, Float, ForeignKey, Integer, JSON, String, Table, UniqueConstraint
 from core.db import metadata
+from domain.states import BASELINE_MODEL_VERSION
 
 booths = Table(
     'projection_booths', metadata,
@@ -12,6 +13,8 @@ booths = Table(
     Column('state', String(12), nullable=False, default='survey'),
     Column('receipt_revision', Integer, nullable=False, default=0),
     Column('optical_epoch', Integer, nullable=False, default=0),
+    Column('model_version', String(64), nullable=False, default=BASELINE_MODEL_VERSION,
+           server_default=BASELINE_MODEL_VERSION),
     Column('released_measurement', String(24), unique=True),
     CheckConstraint("state IN ('survey','powered','retest','cleared')"),
     CheckConstraint("mount IN ('PL','EF')"),
@@ -47,7 +50,7 @@ measurements = Table(
     Column('artifact', String(24), nullable=False),
     Column('probability', Float, nullable=False),
     Column('votes', JSON, nullable=False),
-    Column('model_version', String(24), nullable=False),
+    Column('model_version', String(64), nullable=False),
     Column('compute_token', String(50), nullable=False, unique=True),
     Column('measured_by', String(100), nullable=False),
     CheckConstraint("artifact IN ('clean','soft_focus','color_shift','flicker')"),

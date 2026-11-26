@@ -7,7 +7,9 @@ export async function request(path, data) {
     {method:'POST', headers, body:JSON.stringify(data)});
   const payload = await response.json();
   if (!response.ok) {
-    const detail = Array.isArray(payload.detail) ? payload.detail.map(x => x.loc.at(-1) + ' ' + x.msg).join(' / ') : payload.detail;
+    let detail = payload.detail;
+    if (Array.isArray(detail)) detail = detail.map(x => x.loc.at(-1) + ' ' + x.msg).join(' / ');
+    else if (detail && typeof detail === 'object') detail = detail.message || JSON.stringify(detail);
     throw new Error(detail || '请求未完成');
   }
   return payload;

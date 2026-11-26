@@ -23,3 +23,7 @@ class Artifact(StrEnum):
     SOFT = 'soft_focus'
     SHIFT = 'color_shift'
     FLICKER = 'flicker'
+
+
+BASELINE_MODEL_VERSION = 'ext-20261124-demo'
+ANOMALY_ARTIFACTS = (Artifact.SOFT, Artifact.SHIFT, Artifact.FLICKER)

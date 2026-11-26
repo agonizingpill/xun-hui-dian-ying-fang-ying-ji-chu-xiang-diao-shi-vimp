@@ -49,6 +49,8 @@ docker compose exec -T backend python -m scripts.seed_demo
 
 `backend/domain/learning.py` 使用固定随机种子模拟四类校准卡读数，共 220 条训练和独立种子生成的 60 条留出记录。特征为轮廓损失、色彩偏差、亮度闪变和帧间波动。96 棵极端随机树拟合标签，类概率由各树概率平均生成。模型以版本号和概率分布落库。基准样例的准确率衡量模拟输入，现场应用需要独立采样校准。
 
+复核员可在「模型版本」页录入带标签读数并训练候选版（接口前缀 `/models`，并兼容 `/quality-models`、`/model-versions`）。候选版与启用时的在用版始终在同一套固定 60 条留出样本上比较；`soft_focus`、`color_shift`、`flicker` 任一类的漏判数增加时，启用接口返回 409 且全局仍用旧版。启用和撤回都在一个数据库事务中更新全局指针与各工位版本；新受理判别单立即使用当前版，队列任务和中断后重新入队的任务保留接单时写入的 `model_version`，已签入检测单的结论与版号不随后续换版改变。撤回当前新版会恢复其启用时记录的被替下版本。
+
 - `backend/domain/booth_tables.py`、`lens_tables.py` 声明业务表及约束。
 - `outlet.py` 签收新电气版；`measurement.py` 固定当期校准卡和原记录；`spares.py` 管理镜头出箱与归还；`call_sheet.py` 检查权限、版本和放映阈值。
 - `frontend/src/pages/` 提供电气、校准、器材和放映交班。

@@ -5,7 +5,11 @@ export const mayWrite = role => role === 'operator' || role === 'reviewer';
 export const percent = value => (value * 100).toFixed(1) + '%';
 
 export function input(name,label,props={}) {
-  return el('label',{},el('span',{},label),el('input',{name,required:'',...props}));
+  const required = Object.prototype.hasOwnProperty.call(props, 'required') ? props.required : true;
+  const rest = {...props};
+  delete rest.required;
+  return el('label',{},el('span',{},label),
+    el('input',{name,...(required ? {required:''} : {}),...rest}));
 }
 
 export function select(name,label,options,selected) {
